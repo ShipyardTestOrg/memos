@@ -1,0 +1,23 @@
+services:
+  memos:
+    # Shipyard: route all HTTP traffic for this environment to this service.
+    labels:
+      shipyard.route: '/'
+    image: neosmemo/memos:stable
+    container_name: memos
+    ports:
+      - "5230:5230"
+    volumes:
+      - memos-data:/var/opt/memos
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:5230/"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  memos-data:
+    labels:
+      shipyard.deploy.disk.size: 2Gi
