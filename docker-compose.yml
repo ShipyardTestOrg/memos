@@ -5,6 +5,13 @@ services:
       shipyard.route: '/'
     image: neosmemo/memos:stable
     container_name: memos
+    environment:
+      # On Kubernetes (Shipyard), the Service named "memos" makes k8s inject a
+      # Docker-link-compat var MEMOS_PORT=tcp://<clusterIP>:5230, which shadows the
+      # image's MEMOS_PORT=5230 — memos' viper config coerces that URL to 0 and
+      # binds port 0, failing the health check. Pin the port explicitly; an explicit
+      # pod-spec env var takes precedence over k8s service-link injection.
+      MEMOS_PORT: "5230"
     ports:
       - "5230:5230"
     volumes:
