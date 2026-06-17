@@ -1,0 +1,29 @@
+services:
+  cb-memos:
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile
+    ports:
+      - "5230:5230"
+    environment:
+      # App reads MEMOS_* (viper). Default driver is sqlite -> no external DB needed.
+      # Pin the listen port explicitly so it can't be shadowed by injected service vars.
+      MEMOS_PORT: "5230"
+      MEMOS_DRIVER: "sqlite"
+    volumes:
+      - memos_data:/var/opt/memos
+    healthcheck:
+      # busybox wget ships in the alpine runtime image.
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:5230/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    labels:
+      shipyard.route: '/'
+      shipyard.primary-route: 'true'
+
+volumes:
+  memos_data:
+    labels:
+      shipyard.deploy.disk.size: 2Gi
